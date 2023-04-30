@@ -1,0 +1,551 @@
+options:
+    gameend: 250
+
+on load:
+    set {sk::loaded::mm::gsk} to true
+
+on unload:
+    set {sk::loaded::mm::gsk} to false
+
+# Respawn Func
+on respawn:
+    if {team::%player's uuid%} = "red":
+        wait 1 seconds
+        teleport player to {mmred}
+    if {team::%player's uuid%} = "blue":
+        wait 1 seconds
+        teleport player to {mmblue}
+    
+# Game Functions
+function stopgamemm():
+    set {game} to 0
+    loop all players:
+        gameEnd()
+        regenores()
+        set {gameon} to 0
+        teleport loop-player to {spawn}
+        set {picklevel::%loop-player's uuid%} to 1
+        delete {PersonalCoins::%loop-Player's uuid%}
+        clear loop-player's inventory
+
+function startgamemm():
+    set {game} to 1
+    loop all players:
+        set {PersonalCoins::%loop-player's uuid%} to 0
+    set {gameondiskysend} to 1
+    broadcast "&3[&6Survivor&3]:&2 Welcome To Maniac Miners!"
+    wait 2 seconds
+    broadcast "&3[&6Survivor&3]:&2 You will be Given a Pickaxe"
+    wait 2 seconds
+    broadcast "&3[&6Survivor&3]:&2 Use Shift + Right Click to Upgrade Your Pickaxe"
+    loop all players:
+        teleport loop-player to {mmred}
+        give {mmpick1} to loop-player
+        set {gameon} to 1
+    set {_random} to a random integer between 35 and 45
+    set {wavemm} to 1
+    set {timer.wait} to {_random}
+    wait "%{_random}% seconds" parsed as timespan
+    set {br} to 2
+    annoucewavesmm()
+    set {_random} to a random integer between 50 and 55
+    set {wavemm} to 2
+    set {timer.wait} to {_random}
+    wait "%{_random}% seconds" parsed as timespan
+    set {br} to 3
+    annoucewavesmm()
+    set {br} to 4
+    set {_random} to a random integer between 65 and 70
+    set {wavemm} to 3
+    set {timer.wait} to {_random}
+    wait "%{_random}% seconds" parsed as timespan
+    annoucewavesmm()
+
+function annoucewavesmm():
+    if {br} is 2:
+        broadcast "&8&m----------------------------------"
+        broadcast "&3Wave 1 has started!"
+        broadcast "&6Purchase a new pickaxe!"
+        broadcast "&26 -> 5.5"
+        broadcast "&7Coal and iron will now spawn"
+        broadcast "&8&m----------------------------------"
+    if {br} is 3:
+        broadcast "&8&m----------------------------------"
+        broadcast "&3Wave 2 has started!"
+        broadcast "&25.5 -> 5"
+        broadcast "&6Gold will now Spawn"
+        broadcast "&8&m----------------------------------"
+    if {br} is 4:
+        broadcast "&8&m----------------------------------"
+        broadcast "&3Wave 2 has started!"
+        broadcast "&25 -> 4.5"
+        broadcast "&3Reduced Time!"
+        broadcast "&8&m----------------------------------"
+
+
+# Ui Functions
+
+function openuiMM(P: Player):
+    set metadata tag "MMui" of {_P} to chest inventory with 4 rows named "&6Maniac Miner"
+    # Glass Things
+    set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 26 and 27 and 29 and 31 and 33 and 35 of metadata tag "MMui" of {_P} to orange stained glass pane named "&6"
+    set slot 10 of metadata tag "MMui" of {_P} to wooden axe named "&3Gamerules" with lore "&7Allows you to set Game Rules"
+    set slot 12 of metadata tag "MMui" of {_P} to gold block named "&6Gamemode" with lore "&7Allows you to set Special Gamemodes"
+    set slot 16 of metadata tag "MMui" of {_P} to diamond ore named "&1RegenMap" with lore "&7Regenerates Map with Cobblestone"
+    set slot 14 of metadata tag "MMui" of {_P} to nether star named "&9SetTpPoints" with Lore "&7Sets Tp Points to Different Locations"
+    if {gameon} is 0:
+        set slot 22 of metadata tag "MMui" of {_P} to emerald named "&2Start Game" with lore "&6Let the Battles Begin"
+    if {gameon} is 1:
+        set slot 22 of metadata tag "MMui" of {_P} to redstone block named "&4End Game" with lore "&6Ends the game."
+    set slot 1 and 3 and 5 and 7 and 28 and 30 and 32 and 34 of metadata tag "MMui" of {_P} to red stained glass pane named "&6"
+    open (metadata tag "MMui" of {_P}) to {_P}
+# Open UI
+on inventory click:
+    if event-inventory = (metadata tag "MMui" of player):
+        cancel event
+        if index of event-slot is 14:
+            Setpointsmm(player)
+        if index of event-slot is 22:
+            if {gameon} is 0:
+                startgamemm()
+            if {gameon} is 1:
+                stopgamemm()
+            openuiMM(player)
+        if index of event-slot is 10:
+            GamerulesUIMM(player)
+        if index of event-slot is 12:
+            send "&8Index Error Gamemode(player): Cannot Send Chest Slot? to data"
+        if index of event-slot is 16:
+            regenores()
+
+function GamerulesUIMM(P: player):
+    set metadata tag "GameRules" of {_P} to chest inventory with 4 rows named "&6Maniac Miner &7[Gamerules]"
+    # Glass Things
+    set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 26 and 29 and 31 and 33 and 35 of metadata tag "GameRules" of {_P} to orange stained glass pane named "&6"
+    set slot 27 of metadata tag "GameRules" of {_P} to arrow named "&3Back"
+    if {pvpmm} is 1:
+        set slot 10 of metadata tag "GameRules" of {_P} to diamond sword named "&3PVP" with lore "&7Allows PVP thruout the Minigame" and "&5On"
+    else:
+        set slot 10 of metadata tag "GameRules" of {_P} to diamond sword named "&3PVP" with lore "&7Allows PVP thruout the Minigame" and "&5Off"
+    if {trmm} is 1:
+        set slot 12 of metadata tag "GameRules" of {_P} to netherite block named "&5Tailisman Round" with lore "&3Toggles a immunity Talisman Round" and "&5On"
+    else:
+        set slot 12 of metadata tag "GameRules" of {_P} to netherite block named "&5Tailisman Round" with lore "&3Toggles a immunity Talisman Round" and "&5Off"
+    set slot 22 of metadata tag "GameRules" of {_P} to emerald named "&2Start Game" with lore "&6Let the Battles Begin"
+    set slot 1 and 3 and 5 and 7 and 28 and 30 and 32 and 34 of metadata tag "GameRules" of {_P} to red stained glass pane named "&6"
+    open (metadata tag "GameRules" of {_P}) to {_P}
+on inventory click:
+    if event-inventory = (metadata tag "GameRules" of player):
+        cancel event
+        if index of event-slot is 27:
+            openuiMM(player)
+        if index of event-slot is 10:
+            if {pvpmm} is 1:
+                set {pvpmm} to 0
+            else:
+                set {pvpmm} to 1
+            GamerulesUIMM(player)
+        if index of event-slot is 12:
+            if {trmm} is 1:
+                set {trmm} to 0
+            else:
+                set {trmm} to 1
+            GamerulesUIMM(player)
+function Setpointsmm(P: player):
+    set metadata tag "Setpmm" of {_P} to chest inventory with 4 rows named "&6Maniac Miner &7[SetTpPoints]"
+    set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 26 and 29 and 31 and 33 and 35 of metadata tag "Setpmm" of {_P} to orange stained glass pane named "&6"
+    set slot 27 of metadata tag "Setpmm" of {_P} to arrow named "&3Back"
+    set slot 10 of metadata tag "Setpmm" of {_P} to Redstone block named "&4Red Team" with lore "&7Set a Teleport Point To Red Team"
+    set slot 19 of metadata tag "Setpmm" of {_P} to emerald named "&2Teleport" with lore "&7Teleport's to Red Team's Teleport Point"
+    set slot 25 of metadata tag "Setpmm" of {_P} to emerald named "&2Teleport" with lore "&7Teleport's to Blue Team's Teleport Point"
+    set slot 16 of metadata tag "Setpmm" of {_P} to diamond block named "&3Blue Team" with lore "&7Set a Teleport Point To Blue Team"
+    set slot 1 and 3 and 5 and 7 and 28 and 30 and 32 and 34 of metadata tag "Setpmm" of {_P} to red stained glass pane named "&6"
+    open (metadata tag "Setpmm" of {_P}) to {_P}
+on inventory click:
+    if event-inventory = (metadata tag "Setpmm" of player):
+        cancel event
+        if index of event-slot is 27:
+            openuiMM(player)
+        if index of event-slot is 19:
+            teleport player to {mmred}
+            Setpointsmm(player)
+        if index of event-slot is 25:
+            teleport player to {mmblue}
+            Setpointsmm(player)
+        if index of event-slot is 16:
+            if player's name is "JackwithMC":
+                set {_p} to player's pitch
+                set {_y} to player's yaw
+                set {mmblue} to location at player
+                set {mmblue}'s pitch to {_p}
+                set {mmblue}'s yaw to {_y}
+                send "&3[&6Survivor&3]&2: loc set to %{mmblue}%" to player
+        if index of event-slot is 10:
+            if player's name is "JackwithMC":
+                set {_p} to player's pitch
+                set {_y} to player's yaw
+                set {mmred} to location at player
+                set {mmred}'s pitch to {_p}
+                set {mmred}'s yaw to {_y}
+                send "&3[&6Survivor&3]&2: loc set to %{mmred}%" to player
+            else:
+                send "&3[&6Survivor&3]&2: &4You Dont Have permission to Run This"
+                Setpointsmm(player)
+on right click:
+    if event-block is netherite block:
+        if {placed::survivor::mm::*} contains location of event-block:
+            cancel event
+            set {lastloc} to location of event-block
+            mmorecustom(player)
+
+        if {bitgen} is 2:
+            set block at {renderblock2} to netherite block
+on left click:
+    if event-block is netherite block:
+        if {placed::survivor::mm::*} contains location of event-block:
+            cancel event
+            broadcast "&3%player% has found a &e&lImmunity Talisman!"
+            set the off hand item to totem of undying named "&2Partical"
+            set player's health to 1
+            apply potion of instant damage of tier 2 to player for 10 seconds
+            wait 2 ticks
+            remove regeneration from player
+            remove fire resistance from player
+            remove absorption from player
+            remove instant damage from player
+            wait 1 ticks
+            set player's health to 20
+            remove all totem of undying named "&2Partical" from player
+            set event-block to stone
+function mmgentali():
+    set {_bitgen} to a random integer between 1 and 3
+    if {_bitgen} is 1:
+        set block at {renderblock1} to netherite block
+        set block at {renderblock2} to stone
+        set block at {renderblock3} to stone
+    if {_bitgen} is 2:
+        set block at {renderblock3} to stone
+        set block at {renderblock1} to stone
+        set block at {renderblock2} to netherite block
+    if {_bitgen} is 3:
+        set block at {renderblock2} to stone
+        set block at {renderblock1} to stone
+        set block at {renderblock3} to netherite block
+
+function mmorecustom(P: player):
+    set metadata tag "orecustomdata" of {_P} to chest inventory with 1 rows named "&6Survivor &7[Customization]"
+    # Glass Things
+    set slot 0 of metadata tag "orecustomdata" of {_P} to redstone block named "&31" with lore "&2Sets nbt data to set block their during a event 1"
+    set slot 4 of metadata tag "orecustomdata" of {_P} to redstone block named "&32" with lore "&2Sets nbt data to set block their during a event 2"
+    set slot 8 of metadata tag "orecustomdata" of {_P} to redstone block named "&33" with lore "&2Sets nbt data to set block their during a event 3"
+    if {_P} has permission "op":
+        open (metadata tag "orecustomdata" of {_P}) to {_P}
+on inventory click:
+    if event-inventory = (metadata tag "orecustomdata" of player):
+        cancel event
+        if index of event-slot is 0:
+            send "&3Set Block data to 1"
+            set {renderblock1} to {lastloc}
+            send "%{renderblock1}%"
+        if index of event-slot is 4:
+            send "&3Set Block data to 2"
+            set {renderblock2} to {lastloc}
+            send "%{renderblock2}%"
+        if index of event-slot is 8:
+            send "&3Set Block data to 3"
+            set {renderblock3} to {lastloc}
+            send "%{renderblock3}%"
+# Load Game Function
+on load:
+    blocksDelete()
+
+    blocksLoad(cobblestone, 5)  #the 1st number = points
+    blocksLoad(coal ore, 9)  #the 1st number = points
+    blocksLoad(iron ore, 14)
+
+# Upgrading \ Spending System
+
+on right click:
+    player is holding {mmpick1}:
+        player is sneaking
+        set metadata tag "upgradeUI1" of player to chest inventory with 3 rows named "&6Upgrade"
+        set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 20 and 22 and 24 and 26 of metadata tag "upgradeUI1" of player to light blue stained glass pane named "&6"
+        set slot 1 and 3 and 5 and 7 and 19 and 21 and 23 and 25 of metadata tag "upgradeUI1" of player to red stained glass pane named "&6"
+        set slot 10 and 11 and 12 and 14 and 15 and 16 of metadata tag "upgradeUI1" of player to black stained glass pane named "&6"
+        set slot 13 of metadata tag "upgradeUI1" of player to {mmupgrade1}
+        open (metadata tag "upgradeUI1" of player) to player
+on inventory click:
+    if event-inventory = (metadata tag "upgradeUI1" of player):
+        cancel event
+        if index of event-slot is 13:
+            if {PersonalCoins::%player's uuid%} is greater than or equal to 120:
+                remove 120 from {PersonalCoins::%player's uuid%}
+                send "&6Purchased!"
+                clear player's inventory
+                give player {mmpick2}
+                set {picklevel::%player's uuid%} to 2
+                close player's inventory
+            else:
+                set {amountneeded::%player's uuid%} to 120 - {PersonalCoins::%player's uuid%}
+                send "&3[&6Survivor&3]&2: You need %{amountneeded::%player's uuid%}% Personal Coins To Purchase"
+                close player's inventory
+on right click:
+    player is holding {mmpick2}:
+        player is sneaking
+        set metadata tag "upgradeUI2" of player to chest inventory with 3 rows named "&6Upgrade"
+        set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 20 and 22 and 24 and 26 of metadata tag "upgradeUI2" of player to light blue stained glass pane named "&6"
+        set slot 1 and 3 and 5 and 7 and 19 and 21 and 23 and 25 of metadata tag "upgradeUI2" of player to red stained glass pane named "&6"
+        set slot 10 and 11 and 12 and 14 and 15 and 16 of metadata tag "upgradeUI2" of player to black stained glass pane named "&6"
+        set slot 13 of metadata tag "upgradeUI2" of player to {mmupgrade2}
+        open (metadata tag "upgradeUI2" of player) to player
+on inventory click:
+    if event-inventory = (metadata tag "upgradeUI2" of player):
+        cancel event
+        if index of event-slot is 13:
+            if {PersonalCoins::%player's uuid%} is greater than or equal to 230:
+                remove 230 from {PersonalCoins::%player's uuid%}
+                send "&6Purchased!"
+                remove player's held item from player's inventory
+                clear player's inventory
+                give player {mmpick3}
+                set {picklevel::%player's uuid%} to 3
+                close player's inventory
+            else:
+                set {amountneeded::%player's uuid%} to 230 - {PersonalCoins::%player's uuid%}
+                send "&3[&6Survivor&3]&2: You need %{amountneeded::%player's uuid%}% Personal Coins To Purchase"
+                close player's inventory
+on right click:
+    player is holding {mmpick3}:
+        player is sneaking
+        set metadata tag "upgradeUI3" of player to chest inventory with 3 rows named "&6Upgrade"
+        set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 20 and 22 and 24 and 26 of metadata tag "upgradeUI3" of player to light blue stained glass pane named "&6"
+        set slot 1 and 3 and 5 and 7 and 19 and 21 and 23 and 25 of metadata tag "upgradeUI3" of player to red stained glass pane named "&6"
+        set slot 10 and 11 and 12 and 14 and 15 and 16 of metadata tag "upgradeUI3" of player to black stained glass pane named "&6"
+        set slot 13 of metadata tag "upgradeUI3" of player to {mmupgrade3}
+        open (metadata tag "upgradeUI3" of player) to player
+on inventory click:
+    if event-inventory = (metadata tag "upgradeUI3" of player):
+        cancel event
+        if index of event-slot is 13:
+            if {PersonalCoins::%player's uuid%} is greater than or equal to 350:
+                remove 230 from {PersonalCoins::%player's uuid%}
+                send "&6Purchased!"
+                remove player's held item from player's inventory
+                clear player's inventory
+                set {picklevel::%player's uuid%} to 4
+                give player {mmpick4}
+                close player's inventory
+            else:
+                set {amountneeded::%player's uuid%} to 330 - {PersonalCoins::%player's uuid%}
+                send "&3[&6Survivor&3]&2: You need %{amountneeded::%player's uuid%}% Personal Coins To Purchase"
+                close player's inventory
+on right click:
+    player is holding {mmpick4}:
+        player is sneaking
+        set metadata tag "upgradeUI4" of player to chest inventory with 3 rows named "&6Upgrade"
+        set slot 0 and 2 and 4 and 6 and 8 and 9 and 17 and 18 and 20 and 22 and 24 and 26 of metadata tag "upgradeUI4" of player to light blue stained glass pane named "&6"
+        set slot 1 and 3 and 5 and 7 and 19 and 21 and 23 and 25 of metadata tag "upgradeUI4" of player to red stained glass pane named "&6"
+        set slot 10 and 11 and 12 and 14 and 15 and 16 of metadata tag "upgradeUI4" of player to black stained glass pane named "&6"
+        set slot 13 of metadata tag "upgradeUI4" of player to {mmupgrade4}
+        open (metadata tag "upgradeUI4" of player) to player
+on inventory click:
+    if event-inventory = (metadata tag "upgradeUI4" of player):
+        cancel event
+        if index of event-slot is 13:
+            if {PersonalCoins::%player's uuid%} is greater than or equal to 560:
+                remove 560 from {PersonalCoins::%player's uuid%}
+                send "&6Purchased!"
+                remove player's held item from player's inventory
+                clear player's inventory
+                give player {mmpick4}
+                close player's inventory
+            else:
+                set {amountneeded::%player's uuid%} to 560 - {PersonalCoins::%player's uuid%}
+                send "&3[&6Survivor&3]&2: You need %{amountneeded::%player's uuid%}% Personal Coins To Purchase"
+                close player's inventory
+# Break Block System
+on break:
+    if {gameon} = 1:
+        if player's held item is not a pickaxe:
+            cancel event
+        if player's held item = iron pickaxe named "&2Pickaximum &3I":
+            if event-block is cobblestone:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 2 to {PersonalCoins::%player's uuid%}
+            if event-block is diamond ore:
+                cancel event
+            if event-block is coal ore:
+                cancel event
+            if event-block is iron ore:
+                cancel event
+            if event-block is gold ore:
+                cancel event
+            if event-block is emerald ore:
+                cancel event
+        if player's held item = iron pickaxe named "&2Pickaximum &3II":
+            if event-block is cobblestone:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 2 to {PersonalCoins::%player's uuid%}
+            if event-block is diamond ore:
+                cancel event
+            if event-block is coal ore:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 5 to {PersonalCoins::%player's uuid%}
+            if event-block is iron ore:
+                cancel event
+            if event-block is gold ore:
+                cancel event
+            if event-block is emerald ore:
+                cancel event
+        if player's held item = iron pickaxe named "&2Pickaximum &3III":
+            if event-block is cobblestone:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 2 to {PersonalCoins::%player's uuid%}
+            if event-block is diamond ore:
+                cancel event
+            if event-block is coal ore:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 5 to {PersonalCoins::%player's uuid%}
+            if event-block is iron ore:
+                clear the drops
+                pointsAdd(player, event-block)
+                blockRegen(location of event-block)
+                add 7 to {PersonalCoins::%player's uuid%}
+            if event-block is gold ore:
+                cancel event
+            if event-block is emerald ore:
+                cancel event    
+        if player's held item = iron pickaxe named "&2Pickaximum &3IV":
+            if event-block is cobblestone:
+                clear the drops
+                if {team::%{_P}'s uuid%} = "red":
+                    add 10 to {points::red}
+                else:
+                    add 10 to {points::blue}
+                blockRegen(location of event-block)
+                add 2 to {PersonalCoins::%player's uuid%}
+            if event-block is diamond ore:
+                cancel event
+            if event-block is coal ore:
+                clear the drops
+                if {team::%{_P}'s uuid%} = "red":
+                    add 18 to {points::red}
+                else:
+                    add 10 to {points::blue}
+                blockRegen(location of event-block)
+                add 5 to {PersonalCoins::%player's uuid%}
+            if event-block is iron ore:
+                clear the drops
+                if {team::%{_P}'s uuid%} = "red":
+                    add 28 to {points::red}
+                else:
+                    add 10 to {points::blue}
+                blockRegen(location of event-block)
+                add 7 to {PersonalCoins::%player's uuid%}
+            if event-block is gold ore:
+                clear the drops
+                if {team::%{_P}'s uuid%} = "red":
+                    add 35 to {points::red}
+                else:
+                    add 10 to {points::blue}
+                blockRegen(location of event-block)
+                add 12 to {PersonalCoins::%player's uuid%}
+            if event-block is emerald ore:
+                cancel event     
+# Functions
+function gameEnd():
+    if {points::red} >= {points::blue}:
+        broadcast "&3[&6Survivor&3]&2: Red has won!"
+        RemovePoints()
+        set {gameondiskysendmmres} to 1
+    if {points::blue} >= {points::red}:
+        broadcast "&3[&6Survivor&3]&2: Blue has won!"
+        set {gameondiskysendmmres} to 2
+        RemovePoints()
+function pointsAdd(P: player, I: itemtype):
+    if {team::%{_P}'s uuid%} = "red": # Checks for the team
+        add {blocks::points::%{_I}%} to {points::red}
+    if {team::%{_P}'s uuid%} = "blue":
+        add {blocks::points::%{_I}%} to {points::blue}
+function RemovePoints():
+    set {points::red} to 0
+    set {points::blue} to 0
+    set {br} to 1
+
+function blockRegen(loc: location):
+    wait 1 ticks
+    set block at {_loc} to bedrock
+    #add location of block at {_loc} to {-locs::*} I might Enable this idk
+    wait 1 seconds
+    if {br} = 1:
+        wait 1 seconds
+        chance of 100%:
+            set block at {_loc} to cobblestone
+    if {br} = 2:
+        wait 5.5 seconds
+        chance of 100%:
+            set block at {_loc} to cobblestone
+        chance of 45%:
+            set block at {_loc} to coal ore
+        chance of 20%:
+            set block at {_loc} to iron ore 
+    if {br} = 3:
+        wait 5 seconds
+        chance of 100%:
+            set block at {_loc} to cobblestone
+        chance of 50%:
+            set block at {_loc} to coal ore
+        chance of 41%:
+            set block at {_loc} to iron ore
+        chance of 25%:
+            set block at {_loc} to gold ore
+    if {br} = 4:
+        wait 4.5 seconds
+        chance of 100%:
+            set block at {_loc} to cobblestone
+        chance of 50%:
+            set block at {_loc} to coal ore
+        chance of 41%:
+            set block at {_loc} to iron ore
+        chance of 25%:
+            set block at {_loc} to gold ore
+
+function blocksDelete():
+    delete {blocks::points::*}
+
+function blocksLoad(I: itemtype, points: int):
+    set {blocks::points::%{_I}%} to {_points}
+
+function regenores():
+    loop {-locs::*}:
+        set block at loop-value to cobblestone
+
+
+
+every 5 ticks:
+    if {points::blue} >= {points::red}:
+        set {wtmm} to 1
+    if {points::red} >= {points::blue}:
+        set {wtmm} to 2
+    loop all players:
+        if {gameon} is 1:
+            if {team::%loop-player's uuid%} = "red":
+                if {wtmm} is 2:
+                    set action bar of loop-player to "&2Personal Points: %{PersonalCoins::%loop-player's uuid%}%&4 W Team Points %{points::red}%"
+                if {wtmm} is 1:
+                    set action bar of loop-player to "&2Personal Points: %{PersonalCoins::%loop-player's uuid%}%&4 L Team Points %{points::red}%"
+            if {team::%loop-player's uuid%} = "blue":
+                if {wtmm} is 1:
+                    set action bar of loop-player to "&2Personal Points: %{PersonalCoins::%loop-player's uuid%}%&3 W Team Points %{points::blue}%"
+                if {wtmm} is 2:
+                    set action bar of loop-player to "&2Personal Points: %{PersonalCoins::%loop-player's uuid%}%&3 L Team Points %{points::blue}%"
