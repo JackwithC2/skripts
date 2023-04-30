@@ -1,0 +1,24 @@
+# Wrote By Jackwith#7789
+# For a server called newfastbox!
+
+
+command /getgun [<offlineplayer>]:
+    permission: op
+    trigger:
+        if arg-1 is not set:
+            send "&6Set a player to get the item"
+        else:
+            give player a iron horse armor named "&cAutomatic Gun" with lore "&8(&7Right click to Toggle&8)"
+every 1 ticks:
+    loop all players:
+        if loop-player's tool is iron horse armor named "&cAutomatic Gun":
+            if {gunon::%loop-player's uuid%} is equal to 1:
+                make the loop-player shoot an arrow at velocity 3
+
+
+on right click:
+    if event-item is a iron horse armor with lore "&8(&7Right click to Toggle&8)":
+        if {gunon::%player's uuid%} is equal to 0:
+            set {gunon::%player's uuid%} to 1
+        else:
+            set {gunon::%player's uuid%} to 0
