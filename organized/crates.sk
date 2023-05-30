@@ -1,0 +1,153 @@
+# i'll try to orginize the code.
+
+
+# Commands
+command /givecrate <text>:
+    permission: crate.give
+    trigger:
+        if arg-1 is "daily":
+            givecrate(player, 1)
+
+command /givekey <text> [<offlineplayer>]:
+    permission: crate.give
+    trigger:
+        if arg-1 is "daily":
+            if arg-2 is not set:
+                givekey(player, 1)
+            else:
+                givekey(arg-2, 1)
+
+# Crate Stuff
+
+
+on inventory click:
+    if name of event-inventory is "&7[&6Previewing Daily Crate&7]":
+        cancel event
+on inventory click:
+    if name of event-inventory is "&7[&6Daily Crate&7]":
+        cancel event
+
+on place:
+    if name of player's held item contains "&7[&6Daily Crate&7]":
+        if player has permission "crate.place":
+            add event-block's location to {placed::crates::daily::*}
+            send "&7[&6Crates]: &7You placed a Crate"
+on right click:
+    if event-block is chest:
+        if {placed::crates::daily::*} contain location of event-block:
+            if {crate::%player's uuid%} is true:
+                send "&cPlease Wait"
+                cancel event
+            else:
+                if name of player's held item contains "&7[&6Daily Key&7]":
+                    remove 1 of tool from player's held item
+                    cancel event
+                    set {crate::%player's uuid%} to true
+                    opencrate(player, 1)
+                else:
+                    cancel event
+                    send "&cYou need a key to open &7[&6Daily Crate&7]"
+on left click:
+    player is sneaking:
+        if event-block is chest:
+            if {placed::crates::daily::*} contain location of event-block:
+                if player has permission "crate.remove":
+                    send "&7[&6You removed a Crate&7]"
+                    set event-block to air
+                    remove location of event-block from {placed::crates::daily::*}
+                    givecrate(player, 1)
+                    close player's inventory
+    else:
+        if event-block is chest:
+            if {placed::crates::daily::*} contain location of event-block:
+                cancel event
+                viewcrate(player, 1)
+                send "&7[&6Previewing&7]"
+
+# Functions
+
+function viewcrate(p: player, b: number):
+    if {_b} is 1:
+        set {_cd} to a new chest inventory with 3 row with name "&7[&6Previewing Daily Crate&7]"
+        set slot 0 and 2 and 4 and 6 and 8 and 18 and 20 and 22 and 24 and 26 of {_cd} to orange stained glass pane named "&3"
+        set slot 1 and 3 and 5 and 7 and 9 and 17 and 19 and 21 and 23 and 25 of {_cd} to yellow stained glass pane named "&3"
+        set slot 10 and 16 of {_cd} to cyan stained glass pane named "&3"
+        open {_cd} to {_p}
+
+function givecrate(p: player, c: number):
+    if {_c} is 1:
+        give {_p} 1 chest named "&7[&6Daily Crate&7]" with lore "&7[Place to set]"
+
+function givekey(p: player, k: number):
+    if {_k} is 1:
+        give {_p} 1 tripwire hook named "&7[&6Daily Key&7]"
+
+# Contains an animation
+
+function crateanimation(p: player, c: number):
+    set {_dailycrate} to a new chest inventory with 3 row with name "&7[&6Daily Crate&7]"
+    open {_dailycrate} to {_p}
+    set {_sf} to -1
+    set {_sf1} to 17
+    loop 9 times:
+        add 1 to {_sf}
+        add 1 to {_sf1}
+        set slot {_sf} and {_sf1} and 9 and 17 of {_dailycrate} to black stained glass pane
+    set {_sfl1} to -1
+    set {_sfl2} to 9
+    loop 5 times:
+        add 1 to {_sfl1}
+        remove 1 from {_sfl2}
+        wait 0.1 seconds
+        set slot {_sfl1} and {_sfl2} of {_dailycrate} to orange stained glass pane named "&6&5&3&2&l"
+        play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    wait 0.1 seconds
+    play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    set slot 9 of {_dailycrate} to orange stained glass pane named "&6&5&3&2&l"
+    wait 0.1 seconds
+    play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    set slot 17 of {_P}'s current inventory to orange stained glass pane named "&6&5&3&2&l"
+    set {_sfl1} to 17
+    set {_sfl2} to 5
+    loop 4 times:
+        add 1 to {_sfl1}
+        remove 1 from {_sfl2}
+        wait 0.1 seconds
+        set slot {_sfl1} and {_sfl2} of {_dailycrate} to orange stained glass pane named "&6&5&3&2&l"
+        play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    wait 0.1 seconds
+    set slot 22 of {_P}'s current inventory to redstone torch named ""
+    play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    wait 0.1 seconds
+    set {_sfl1} to 22
+    set {_sfl2} to 5
+    loop 4 times:
+        add 1 to {_sfl1}
+        remove 1 from {_sfl2}
+        wait 0.1 seconds
+        set slot {_sfl1} and {_sfl2} of {_dailycrate} to orange stained glass pane named "&6&5&3&2&l"
+        play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+    opencrate({_P}, 2)
+
+function opencrate(p: player, c: number):
+    if {_c} is 1:
+        crateanimation({_P}, 1)
+    if {_c} is 2:
+        set {_sfl1} to 9
+        set {_sfl2} to 17
+        loop 3 times:
+            add 1 to {_sfl1}
+            remove 1 from {_sfl2}
+            wait 0.2 seconds
+            set slot {_sfl1} and {_sfl2} of {_p}'s current inventory to yellow stained glass pane named "&6&5&3&2&l"
+            play sound "block.note_block.bell" at volume 100 and pitch 1 for {_p}
+        chance of 100%:
+            set {_prize::%{_p}'s uuid%} to flint
+        chance of 50%:
+            set {_prize::%{_p}'s uuid%} to gravel
+        wait 0.2 seconds
+        play sound "block.note_block.bell" at volume 100 and pitch 2 for {_p}
+        set slot 13 of {_p}'s current inventory to {_prize::%{_p}'s uuid%}
+        give {_p} {_prize::%{_p}'s uuid%}
+        close {_p}'s inventory
+        set {crate::%{_p}'s uuid%} to false
