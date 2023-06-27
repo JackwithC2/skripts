@@ -1,3 +1,6 @@
+# Made by JackwithMC
+# Requires Skript, Vault, (EssentialsX)
+
 options:
     max_gens: 20
     enabled: true
