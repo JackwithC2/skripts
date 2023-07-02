@@ -1,0 +1,20 @@
+on break:
+    if player's held item = any pickaxe:
+        blockRegen(location of event-block)
+
+function regen():
+    loop {-locs::*}:
+        set block at loop-value to cobblestone
+
+function blockRegen(loc: location):
+    wait 1 ticks
+    set block at {_loc} to bedrock
+    wait 10 seconds
+    chance of 100%: #I would keep this 100# to skript can always set it to a block
+        set block at {_loc} to cobblestone
+        add location of block at {_loc} to {-locs::*}
+    chance of 25%:
+        set block at {_loc} to coal ore
+
+function blocksDelete():
+    delete {-locs::*}
