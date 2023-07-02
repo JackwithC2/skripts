@@ -1,0 +1,16 @@
+command /staffchat:
+    aliases: /sc
+    permission: staff.sk
+    trigger:
+        if {staffchat::%player's uuid%} is true:
+            set {staffchat::%player's uuid%} to false
+            send "&cStaff Chat is now disabled"
+        else:
+            set {staffchat::%player's uuid%} to true
+            send "&cStaff chat is now enabled"
+on chat:
+    if {staffchat::%player's uuid%} is true:
+        loop all players:
+            if loop-player has permission "staff.sk":
+                cancel event
+                send "&cStaffchat: &f%player%: %message%" to loop-player
