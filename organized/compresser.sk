@@ -1,64 +1,68 @@
-# Compresser Maps
-
 options:
     enabled: true
-    Block1: 32 gravel
-    Comp1: 1 flint
-    Block2: 32 gravel and 32 andesite
-    Comp2: 1 flint and polished andesite
-    Block3: 32 gravel, 32 andesite and 32 stone
-    Comp3: 1 flint, 1 polished andesite and 1 stone bricks
+    prefix: &aServerName
+    reset_timer: 1 seconds
+    compressername: &a&kO&aAuto Compresser&a&kO
 
-# Commands
-
-command /compress <text> [<number>]:
+command /compress <text>:
+    permission: sk.compressers
     trigger:
         if arg-1 is "give":
-            if arg-2 is not set:
-                send "&7[&6Compressers&7] Use /compress give number"
-            else:
-                give player {compresser.%arg-2%}
-        if arg-1 is "set": # Setup
-            if arg-2 is not set:
-                send "&7[&6Compressers&7] Use /compress set number"
-            else:
-                set {compresser.%arg-2%} to player's held item
-                send "&7[&6Compressers&7] %{compresser.%arg-2%}% was set"
+            give player 1 white candle named "{@compressername}"
+        else if arg-1 is "menu":
+            compressermenu(player, 1)
+
+on inventory click:
+    if name of event-inventory is "&3&l[COMPRESSER MENU]": 
+        if clicked slot is 35:
+            cancel event
+            set {_gui} to uncolored line 1 of lore of event-slot
+            compressermenu(player, ({_gui} parsed as number))
+            cancel event
+
+on inventory close:
+    if name of event-inventory is "&3&l[COMPRESSER MENU]": 
+        set {_guitype} to uncolored line 1 of lore of slot 35 of player's current inventory parsed as number
+        set {_n} to 0
+        if {_guitype} is 1:
+            loop 34 times:
+                add 1 to {_n}
+                set {Comp::%{_n}%} to slot ({_n}-1) of player's current inventory
+            delete {_n}
+        else if {_guitype} is 2:
+            loop 34 times:
+                add 1 to {_n}
+                set {Block::%{_n}%} to slot ({_n}-1) of player's current inventory
+            delete {_n}
+
+function compressermenu(p: player, index: number):
+    if {_index} is 1:
+        set {_cmenu} to a new chest inventory with 4 rows with name "&3&l[COMPRESSER MENU]"
+        set {_addslots} to 0
+        loop {Block::*}:
+            add 1 to {_addslots}
+            set slot ({_addslots}-1) of {_cmenu} to loop-value
+        set slot 35 of {_cmenu} to arrow with name "&bCompressed Items" with lore "&a2"
+        open {_cmenu} to {_p}
+    else if {_index} is 2:
+        set {_cmenu} to a new chest inventory with 4 rows with name "&3&l[COMPRESSER MENU]"
+        set {_addslots} to 0
+        loop {Comp::*}:
+            add 1 to {_addslots}
+            set slot ({_addslots}-1) of {_cmenu} to loop-value
+        set slot 35 of {_cmenu} to arrow with name "&bBlocks/Items" with lore "&a1"
+        open {_cmenu} to {_p}
 
 
-# Events
-
-every 1 second:
+every {@reset_timer}:
     loop all players:
         if {@enabled} is true:
-            if loop-player's offhand is {compresser.1}:
-                compress(loop-player, 1)
-            if loop-player's offhand is {compresser.2}:
-                compress(loop-player, 2)
-            if loop-player's offhand is {compresser.3}:
-                compress(loop-player, 3)
-        
-# Functions
-
-function compress(p: player, i: number):
-    if {_i} is 1:
-        set {_b1::*} to {@Block1}
-        set {_c1::*} to {@Comp1}
-        loop {_b1::*}:
-            while {_p} has loop-value:
-                remove loop-value from {_p}'s inventory
-                give {_p} {_c1::%loop-index%}
-    if {_i} is 2:
-        set {_b2::*} to {@Block2}
-        set {_c2::*} to {@Comp2}
-        loop {_b2::*}:
-            while {_p} has loop-value:
-                remove loop-value from {_p}'s inventory
-                give {_p} {_c2::%loop-index%}
-    if {_i} is 3:
-        set {_b3::*} to {@Block3}
-        set {_c3::*} to {@Comp3}
-        loop {_b3::*}:
-            while {_p} has loop-value:
-                remove loop-value from {_p}'s inventory
-                give {_p} {_c3::%loop-index%}
+            if loop-player's offhand item is white candle named "{@compressername}":
+                compress(loop-player)
+function compress(p: player):
+    set {_b::*} to {Block::*}
+    set {_cb::*} to {Comp::*}
+    loop {_b::*}:
+        while {_p} has loop-value:
+            remove loop-value from {_p}'s inventory
+            give {_p} {_cb::%loop-index%}
