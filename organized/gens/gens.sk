@@ -1,0 +1,36 @@
+options:
+    max_gens: 30
+    enabled: true
+
+on load:
+    set {gens::1} to light gray shulker box named "&aStone Gen"
+    set {gens::2} to gray shulker box named "&aCoal Gen"
+
+command /sell:
+    trigger:
+        sell(player, coal, 2)
+        set {_foramtedmoney} to format({earned})
+        if {earned} > 0:
+            send "&aYou've earned a soild &e&l%{_formatedmoney}%$"
+        delete {earned}
+
+command /gens [<text>] [<player>] [<number>]:
+    permission: gens.sk
+    trigger:
+        if arg-1 is "info":
+            send "&3[GENS] VERISON 1.0"
+        else if arg-1 is "give":
+            if arg-2 is set:
+                if arg-3 is set:
+                    give 1 of {gens::%arg-3%} to arg-2
+        if arg-1 is "reset":
+            if arg-2 is set:
+                loop {genslocation::%arg-2's uuid%::*}:
+                    set block at loop-value to air
+                delete {currentgens::%arg-2's uuid%}
+                delete {genslocation::%arg-2's uuid%::*}
+        if arg-1 is "addslots":
+            if arg-2 is set:
+                if arg-3 is set:
+                    add arg-3 to {addedgens::%player's uuid%}
+                    send "&3Successfully gave %arg-3% genslots to player"
