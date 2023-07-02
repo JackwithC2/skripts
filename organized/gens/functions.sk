@@ -1,0 +1,54 @@
+options:
+    max_gens: 30
+    enabled: true
+
+function upgradeGen(p: player, l: location, b: itemtype, r: int):
+    if {_p}'s money is more than or equal to {_r}: 
+        subtract {_r} from {_p}'s money
+        set {_u} to {_i} + 1
+        set block at {_l} to {_b}
+    else:
+        set {_m} to {_r} - {_p}'s money
+        set {_f} to format({_m})
+        send "&cYou need %{_f}%$ to upgrade this" to {_p}
+
+function breakGen(p: player, i: int, l: location):
+    set block at {_l} to air
+    remove 1 from {currentgens::%{_p}'s uuid%}
+    remove {_l} from {genslocation::%{_p}'s uuid%::*}
+    send "&3You've removed a gen (%{currentgens::%{_p}'s uuid%} ? 0%/{@max_gens})" to {_p}
+    give {_p} {gens::%{_i}%}
+
+function placeGen(p: player, l: location):
+    set {_items} to item amount of {_p}'s tool
+    set {_item} to 1 of {_p}'s held item
+    loop {gens::*}:
+        if {_p}'s held item is {_items} of loop-value:
+            if {@max_gens} + {addedgens::%{_p}'s uuid%} = {currentgens::%{_p}'s uuid%}:
+                send "&cYou've reached the max amount of gens" to {_p}
+                give {_item} to {_p}
+                set block at {_l} to air
+            else:
+                wait 1 tick
+                if block at {_l} is air:
+                    send "&cYou cannot place a gen here!" to {_p}
+                else:
+                    remove 1 of {_item} from {_p}
+                    add 1 to {currentgens::%{_p}'s uuid%}
+                    add {_l} to {genslocation::%{_p}'s uuid%::*}
+                    send "&3You've placed a gen (%{currentgens::%{_p}'s uuid%} ? 0%/%{@max_gens} + {addedgens::%{_p}'s uuid%}%)" to {_p}
+
+function sell(p: player, i: itemtype, s: number):
+    set {_a} to amount of {_i} in {_p}'s inventory
+    set {_c} to ({_a} * {_s})
+    add {_c} to {_p}'s balance
+    add {_c} to {earned}
+    remove all {_i} from {_p}
+
+function format(n: number) :: text:
+  set {_prefixes} to "Qn,18:Qd,15:T,12:B,9:M,6:K,3"
+  loop {_prefixes} split at ":":
+    set {_s::*} to loop-value split at ","
+    {_n} >= 10 ^ {_s::2} parsed as number
+    return "%{_n} / 10 ^ {_s::2} parsed as number%%{_s::1}%"
+  return "%{_n}%"
