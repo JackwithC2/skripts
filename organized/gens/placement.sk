@@ -1,0 +1,49 @@
+options:
+    max_gens: 30
+    enabled: true
+
+on place:
+    placeGen(player, location of event-block)
+
+on right click:
+    if clicked block is any shulker box:
+        cancel event
+    player is sneaking
+    if {genslocation::%player's uuid%::*} contains location of event-block:
+        cancel event
+        if block at event-block is light gray shulker box:
+            upgradeGen(player, location of event-block, gray shulker box, 100)
+            stop
+        if block at event-block is gray shulker box:
+            upgradeGen(player, location of event-block, brown shulker box, 500)
+            stop
+
+on left click:
+    if {genslocation::%player's uuid%::*} contains location of event-block:
+        cancel event
+        if block at event-block is light gray shulker box:
+            breakGen(player, 1, location of event-block)
+            stop
+        if block at event-block is gray shulker box:
+            breakGen(player, 2, location of event-block)
+            stop
+
+on right click:
+    if name of player's held item contains "chunk":
+        cancel event
+
+on spawn:
+    if event-entity is mob:
+        cancel event
+
+on join:
+    while player is online:
+        if {@enabled} is true:
+            wait 10 seconds
+            loop {genslocation::%player's uuid%::*}:
+                set {_loc} to block above loop-value
+                set {_gen} to block at loop-value
+                if {_gen} is light gray shulker box:
+                    drop 1 of polar bear spawn egg named "&aStone" 1 meters above {_loc} without velocity
+                else if {_gen} is gray shulker box:
+                    drop 1 of mule spawn egg named "&aCoal" 1 meters above {_loc} without velocity
