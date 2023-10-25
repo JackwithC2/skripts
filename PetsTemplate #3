@@ -1,0 +1,23 @@
+command /petspawn:
+    trigger:
+        spawn armor stand at player with nbt from "{Small:1,Invisible:1,NoGravity:1}"
+        set {_pet} to last spawned armor stand
+        set helmet of {_pet} to player head
+        set {pets::%player's uuid%} to {_pet}
+
+every 1 tick:
+    set {_y} to 0.45
+    set {_x} to -1.55
+    set {_z} to 0.75
+    set {_spawn} to location {_x}, {_y}, {_z} in world "world"
+
+on any move:
+    if entity is player:
+        set {_y} to player's y coord + 0.45
+        set {_x} to player's x coord + -1.55
+        set {_z} to player's z coord + 0.75
+        set {_w} to player's world
+        set {_st} to location {_x}, {_y}, {_z} in world {_w}
+        set {_st}'s pitch to 0
+        set {_st}'s yaw to 110
+        teleport {pets::%player's uuid%} to {_st}

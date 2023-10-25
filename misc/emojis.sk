@@ -1,0 +1,11 @@
+on chat:
+    if message contains ":skull:":
+        replace ":skull:" in message with "&f☠&r"
+    if message contains "<3":
+        replace "<3" in message with "&c❤&r"
+    if message contains ":skull:":
+        replace ":skull:" in message with "☠"
+    if message contains ":announcement:":
+        replace ":announcement:" in message with "&c⚠&r"
+    if message contains ":skull:":
+        replace ":skull:" in message with "☠"

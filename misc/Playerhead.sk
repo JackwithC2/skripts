@@ -1,0 +1,30 @@
+import:
+    java.net.URL
+    javax.imageio.ImageIO
+    net.md_5.bungee.api.ChatColor
+    java.awt.Color
+
+# ---------- Player head -------------
+
+command /purchase <offlineplayer> <text>:
+    executable by: console
+    trigger:
+        set {_player} to arg-1
+        set {_image} to ImageIO.read(new URL("https://cravatar.eu/helmavatar/%{_player}'s uuid%/8.png"))
+        loop 8 times:
+            loop 8 times:
+                set {_line} to (loop-value-1 - 1)
+                set {_skin::%{_line}%} to join {_skin::%{_line}%} and "%ChatColor.of(new Color({_image}.getRGB(loop-value-2 - 1, {_line})))%█"
+        loop all players:
+            play sound "item.goat_horn.sound.0" with volume 10 with pitch 2 at loop-player for loop-player
+        broadcast "&8&m                                                              &f"
+        # draw character
+        broadcast "%{_skin::0}%"
+        broadcast "%{_skin::1}%"
+        broadcast "%{_skin::2}%"
+        broadcast "%{_skin::3}%"
+        broadcast "%{_skin::4}%"
+        broadcast "%{_skin::5}%r"
+        broadcast "%{_skin::6}%"
+        broadcast "%{_skin::7}%"
+        broadcast "&8&m                                                              &f"

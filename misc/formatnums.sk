@@ -1,0 +1,7 @@
+function format(n: number) :: text:
+  set {_prefixes} to "Stp,54:Sxd,51:Qnd,48:Qt,45:Td,42:Do,39:Ud,36:Dc,33:Nn,30:Oc,27:Sp,24:Sx,21:Qn,18:Qd,15:T,12:B,9:M,6:K,3"
+  loop {_prefixes} split at ":":
+    set {_s::*} to loop-value split at ","
+    {_n} >= 10 ^ {_s::2} parsed as number
+    return "%{_n} / 10 ^ {_s::2} parsed as number%%{_s::1}%"
+  return "%{_n}%"

@@ -1,0 +1,29 @@
+# Skript-reflect required
+
+import:
+    java.net.URL
+    javax.imageio.ImageIO
+    net.md_5.bungee.api.ChatColor
+    java.awt.Color
+
+command /purchase <offlineplayer> <text>:
+    executable by: console
+    trigger:
+        set {_player} to arg-1
+        set {_image} to ImageIO.read(new URL("https://cravatar.eu/helmavatar/%{_player}'s uuid%/8.png"))
+        loop 8 times:
+            loop 8 times:
+                set {_line} to (loop-value-1 - 1)
+                set {_skin::%{_line}%} to join {_skin::%{_line}%} and "%ChatColor.of(new Color({_image}.getRGB(loop-value-2 - 1, {_line})))%█"
+        loop all players:
+            play sound "item.goat_horn.sound.0" with volume 10 with pitch 2 at loop-player for loop-player
+        broadcast "&8&m                                                              &f"
+        broadcast "%{_skin::0}% <##1A9200>&lP<##22A000>&lU<##29AD00>&lR<##31BB00>&lC<##38C900>&lH<##40D600>&lA<##47E400>&lS<##4FF100>&lE<##56FF00>&l!"
+        broadcast "%{_skin::1}% &8ᴛʜᴀɴᴋ ʏᴏᴜ"
+        broadcast "%{_skin::2}%"
+        broadcast "%{_skin::3}% <##54FBFB>➥ &f%arg-1% &7purchased %colored arg-2%"
+        broadcast "%{_skin::4}%"
+        broadcast "%{_skin::5}% &7If you'd like to support the server"
+        broadcast "%{_skin::6}% &7go to <link:https://ramdom.tebex.io><##F4B7A5>&nhttps://ramdom.tebex.io"
+        broadcast "%{_skin::7}%"
+        broadcast "&8&m               

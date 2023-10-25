@@ -1,0 +1,45 @@
+command /killset <offlineplayer>:
+    trigger:
+        add 1 to {kills::%arg-1%}
+
+command /resetleaderboard:
+    trigger:
+        set {_sorted::*} to sort((indices of {kills::*}, {kills::*}))
+        loop 10 times:
+            set {_leaderboardset} to loop-number + 3
+            set {_player} to {_sorted::%loop-value%}
+            set {_P} to {_sorted::%loop-value%} parsed as offlineplayer
+            set {_v} to {kills::%{_player}%}
+            set {_l} to "&a&l##%loop-number% &f%{_P}%&7 - &a%{_v}% Kill(s)"
+            if {_v} is set:
+                execute console command "dh l set VarTest 1 %{_leaderboardset}% %{_l}%"
+            else:
+                execute console command "dh l set VarTest 1 %{_leaderboardset}% &a&l##%loop-number% &fNobody&7 - &a0 Kill(s)"
+
+command /killreset:
+    trigger:
+        delete {kills::*}
+
+on death:
+    if attacker is a player:
+        add 1 to {kills::%attacker's uuid%}
+
+every 1 minute:
+    #broadcast "&f[All leaderboards have been reset]"
+    set {_sorted::*} to sort((indices of {kills::*}, {kills::*}))
+    loop 10 times:
+        set {_leaderboardset} to loop-number + 3
+        set {_player} to {_sorted::%loop-value%}
+        set {_P} to {_sorted::%loop-value%} parsed as offlineplayer
+        set {_v} to {kills::%{_player}%}
+        set {_l} to "&a&l##%loop-number% &f%{_P}%&7 - &a%{_v}% Kill(s)"
+        if {_v} is set:
+            execute console command "dh l set VarTest 1 %{_leaderboardset}% %{_l}%"
+        else:
+            execute console command "dh l set VarTest 1 %{_leaderboardset}% &a&l##%loop-number% &fNobody&7 - &a0 Kill(s)"
+        
+
+function sort(indices: strings, values: numbers, descending: boolean = true) :: strings:
+    loop {_indices::*}: 
+        set {_sort::%{_values::%loop-index%}%.%loop-index%} to loop-value
+    return (reversed {_sort::*}) if {_descending} is true, else {_sort::*}

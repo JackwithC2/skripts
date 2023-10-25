@@ -1,0 +1,107 @@
+# Made by JackwithMC
+# Requires Skript, Vault, (EssentialsX)
+
+options:
+    max_gens: 20
+    enabled: true
+
+on load:
+    set {gens::1} to coal ore named "&0Coal Gen"
+    set {gens::2} to iron ore named "&6Iron Gen"
+
+command /givegen <number> <number>:
+    permission: gens.give
+    trigger:
+        if arg-1 is set:
+            give arg-2 of {gens::%arg-1%} to player
+        else:
+            send "&cSpecify a gen number first"
+
+command /resetgens <offline player>:
+    permission: gens.reset
+    trigger:
+        if arg-1 is set:
+            loop {genslocation::%arg-1's uuid%::*}:
+                set block at loop-value to air
+            delete {currentgens::%arg-1's uuid%}
+            delete {genslocation::%arg-1's uuid%::*}
+
+command /sell:
+    trigger:
+        sell(player, coal, 2)
+        if {earned} > 0:
+            send "&aYou've earned a soild &e&l%{earned}%$"
+        delete {earned}
+
+on place:
+    placeGen(player, location of event-block)
+
+on right click:
+    player is sneaking
+    loop {genslocation::%player's uuid%::*}:
+        if location of event-block is loop-value:
+            if event-block is coal ore:
+                upgradeGen(player, 20, 1, location of event-block)
+
+on left click:
+    loop {genslocation::%player's uuid%::*}:
+        if location of event-block is loop-value:
+            if event-block is coal ore:
+                breakGen(player, 1, location of event-block)
+            if event-block is iron ore:
+                breakGen(player, 2, location of event-block)
+
+on join:
+    while player is online:
+        if {@enabled} is true:
+            wait 10 seconds
+            loop {genslocation::%player's uuid%::*}:
+                set {_loc} to block above loop-value
+                set {_gen} to block at loop-value
+                if {_gen} is coal ore:
+                    drop 1 of coal named "&fCoal" 1 meters above {_loc} without velocity
+                else if {_gen} is iron ore:
+                    drop 1 of iron ingot named "&fIron" 1 meters above {_loc} without velocity
+
+function upgradeGen(p: player, r: int, i: number, l: location):
+    if {_p}'s money is more than or equal to {_r}:
+        subtract {_r} from {_p}'s money
+        set {_u} to {_i} + 1
+        set block at {_l} to {gens::%{_u}%}
+    else:
+        set {_m} to {_r} - {_p}'s money
+        send "&cYou need %{_m}%$ to upgrade this" to {_p}
+
+function breakGen(p: player, i: int, l: location):
+    set block at {_l} to air
+    remove 1 from {currentgens::%{_p}'s uuid%}
+    remove {_l} from {genslocation::%{_p}'s uuid%::*}
+    send "&3You've removed a gen (%{currentgens::%{_p}'s uuid%} ? 0%/{@max_gens})" to {_p}
+    give {_p} {gens::%{_i}%}
+
+function placeGen(p: player, l: location):
+    set {_items} to item amount of {_p}'s tool
+    set {_item} to 1 of {_p}'s held item
+    loop {gens::*}:
+        if {_p}'s held item is {_items} of loop-value:
+            if {@max_gens} = {currentgens::%{_p}'s uuid%}:
+                send "&cYou've reached the max amount of gens" to {_p}
+                set block at {_l} to air
+                give {_item} to {_p}
+                remove 1 of {_item} from {_p}
+            else:
+                wait 1 tick
+                if block at {_l} is air:
+                    send "&cYou cannot place a gen here!" to {_p}
+                else:
+                    remove 1 of {_item} from {_p}
+                    add 1 to {currentgens::%{_p}'s uuid%}
+                    add {_l} to {genslocation::%{_p}'s uuid%::*}
+                    send "&3You've placed a gen (%{currentgens::%{_p}'s uuid%} ? 0%/{@max_gens})" to {_p}
+
+function sell(p: player, i: itemtype, s: number):
+    set {_a} to amount of {_i} in {_p}'s inventory
+    set {_c} to ({_a} * {_s})
+    add {_c} to {_p}'s balance
+    add {_c} to {earned}
+    remove all {_i} from {_p}

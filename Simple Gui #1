@@ -1,0 +1,27 @@
+# How to make a simple gui: Skript Tutorial #1
+#
+# Made by Jackwith
+
+
+command /gui:
+    trigger:
+        gui(player)
+function gui(p: player):
+    set {ui} to a new chest inventory with 3 rows named "&3test"
+    open {ui} to {_p}
+    set {uibuilder::%{_p}'s uuid%} to -1
+    set {uibuilder2::%{_p}'s uuid%} to 28
+    loop 27 times:
+        add 1 to {uibuilder::%{_p}'s uuid%}
+        add 1 to {uibuilder2::%{_p}'s uuid%}
+        set slot {uibuilder::%{_p}'s uuid%} and {uibuilder2::%{_p}'s uuid%} of {ui} to purple stained glass pane named "&a"
+    set {uibuilder::%{_p}'s uuid%} to 9
+    loop 7 times:
+        add 1 to {uibuilder::%{_p}'s uuid%}
+        set slot {uibuilder} of {ui} to black stained glass pane
+    set slot 10 of {ui} to bedrock named "&4Bedrock"
+on inventory click:
+    if name of event-inventory is "&3test":
+        cancel event
+        clicked slot is 10:
+            send "&3You clicked &4Bedrock"
