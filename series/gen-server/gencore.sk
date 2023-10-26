@@ -1,0 +1,110 @@
+#
+# Watch the video on how i made this | https://www.youtube.com/watch?v=sgbdUnSOcPo |
+#
+
+on load:
+    # Gen Loader
+    set {pb.gensloaded.1} to coal ore named "&8Coal Gen" with lore "&eTier: 1" and "&c"
+    set {pb.gensloaded.2} to iron ore named "&fIron Gen" with lore "&eTier: 2" and "&c"
+    set {pb.gensloaded.3} to diamond ore named "&3Diamond Gen" with lore "&eTier: 3" and "&c"
+    # Gen Stats
+    set {pb.gens.1.upgrade} to 400
+    set {pb.gens.2.upgrade} to 600
+    set {pb.gens.1.drop} to coal named "&8Drop"
+    set {pb.gens.2.drop} to coal named "&8Drop2"
+
+command /m:
+    trigger:
+        set {money::%player's uuid%} to 4000
+
+command /b:
+    trigger:
+        delete {placedgen::%player's uuid%::*}
+
+command /pebblegens [<text>] [<text>]:
+    trigger:
+        if arg-1 is "givegen":
+            if arg-2 is set:
+                give player 1 of {pb.gensloaded.%arg-2%}
+on place:
+    if line 1 of lore of player's held item contains "&eTier":  
+        set {_l} to uncolored line 1 of lore of player's held item
+        wait 1 tick
+        if event-block is not air:
+            replace all "Tier" and ":" and " " with "" in {_l}
+            set {_nbt} to nbt compound of event-block
+            set tag "tag;tier" of {_nbt} to {_l}
+            set tag "tag;owner" of {_nbt} to player's uuid
+            add location of event-block to {placedgen::%player's uuid%::*}
+            send title "&3&lPLACED GEN" with subtitle "&8[&70/10]" to player
+
+
+on right click:
+    if player is sneaking:
+        set {_nbt} to nbt compound of event-block
+        if tag "tag;tier" of {_nbt} is set:
+            if tag "tag;owner" of {_nbt} is player's uuid:
+                if {placedgen::%player's uuid%::*} contains location of event-block:
+                    set {_id} to tag "tag;tier" of {_nbt}
+                    add 1 to {_id}
+                    if {pb.gensloaded.%{_id}%} is set:
+                        if {money::%player's uuid%} >= {pb.gens.%{_id} - 1%.upgrade}:
+                            remove {pb.gens.%{_id} - 1%.upgrade} from {money::%player's uuid%}
+                            set block at event-block to {pb.gensloaded.%{_id}%}
+                            set {_nbt} to nbt compound of event-block
+                            set {_l} to uncolored line 1 of lore of {pb.gensloaded.%{_id}%}
+                            replace all "Tier" and ":" and " " with "" in {_l}
+                            set tag "tag;tier" of {_nbt} to {_id}
+                            set tag "tag;owner" of {_nbt} to player's uuid
+                            send title "&3&lUPGRADED" with subtitle "&7You upgraded your gen to &f%name of {pb.gensloaded.%{_id}%}%"
+                        else:
+                            send title "&c&lERROR" with subtitle "&7You need %{pb.gens.%{_id} - 1%.upgrade} - {money::%player's uuid%}%"
+                    else:
+                        send title "&c&lERROR" with subtitle "&7You already have a maxed gen"
+                else:
+                    send title "&cBUGGED GEN" with subtitle "&7You were given your gen back"
+                    set {_id} to tag "tag;tier" of {_nbt}
+                    set event-block to air
+                    give player 1 of {pb.gensloaded.%{_id}%}
+
+on break:
+    set {_nbt} to nbt compound of event-block
+    if tag "tag;tier" of {_nbt} is set:
+        if tag "tag;owner" of {_nbt} is player's uuid:
+            cancel event
+            send action bar "&c&lERROR: &7You need to shift + left click to perform this action"
+
+on left click:
+    set {_nbt} to nbt compound of event-block
+    if player is sneaking:
+        if tag "tag;tier" of {_nbt} is set:
+            if tag "tag;owner" of {_nbt} is player's uuid:
+                if {placedgen::%player's uuid%::*} contains location of event-block:
+                    set {_id} to tag "tag;tier" of {_nbt}
+                    remove location of event-block from {placedgen::%player's uuid%}
+                    give {pb.gensloaded.%{_id}%} to player
+                    send title "&c&lREMOVED" with subtitle "&7[0/10]"
+                    set event-block to air
+                else:
+                    send title "&cBUGGED GEN" with subtitle "&7You were given your gen back"
+                    set {_id} to tag "tag;tier" of {_nbt}
+                    set event-block to air
+                    give player 1 of {pb.gensloaded.%{_id}%}
+    else:
+        if tag "tag;tier" of {_nbt} is set:
+            if tag "tag;owner" of {_nbt} is player's uuid:
+                send title "&c&lERROR" with subtitle "&7You need to shift + left click to pickup"
+                cancel event
+            else:
+                send title "&c&lERROR" with subtitle "&7This is not your gen"
+                cancel event
+
+every 5 seconds:
+    loop all players:
+        loop {placedgen::%loop-player's uuid%::*}:
+            set {_newloc} to loop-value-2
+            set {_nbt} to nbt compound of block at {_newloc}
+            set {_gendrop} to tag "tag;tier" of {_nbt}
+            drop {pb.gens.%{_gendrop}%.drop} at {_newloc} without velocity
+
+
