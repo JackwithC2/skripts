@@ -1,0 +1,40 @@
+command /addpresent [<number>]:
+	permission: *
+	trigger:
+		if {presentdb::%arg-1%} is set:
+			send "&c%size of {presentdb::*}%"
+		else:
+			set {presentdb::%arg-1%} to location of targeted block
+
+on right click:
+	if {presentdb::*} contains location of event-block:
+		foundpres(location of event-block, player)
+
+function findpresents(location: location) :: number:
+	loop {presentdb::*}:
+		add 1 to {_r}
+		if loop-value contains {_location}:
+			return {_r}
+
+function foundpres(location: location, p: player):
+	if {predb::%findpresents({_location})%::%{_p}'s uuid%} is not set:
+		set {predb::%findpresents({_location})%::%{_p}'s uuid%} to 1
+		add 1 to {predb::foundpresents::%{_p}'s uuid%}
+		if {predb::id::%{_p}'s uuid%} is not set:
+			set {predb::id::%{_p}'s uuid%} to 1
+		send "&8&m                                    " to {_p}
+		send "&c&l| &f%smallcaps("you found a ")%&6%smallcaps("present")%" to {_p}
+		send "&f&l| &f%smallcaps("rewards")%:" to {_p}
+		send "&c&l| &f+&2$&a25k" to {_p}
+		if {predb::foundpresents::%{_p}'s uuid%} >= {predb::id::%{_p}'s uuid%} * 10:
+			add 1 to {predb::id::%{_p}'s uuid%}
+			send "&f&l| &f+&f25x&3%smallcaps(" genslots")%" to {_p}
+			add 25 to {db::maxgenslots::%{_p}'s uuid%}
+		add 25000 to {_p}'s balance
+		send "&f" to {_p}
+		send "&7[%{predb::foundpresents::%{_p}'s uuid%}%/%size of {presentdb::*}%]" to {_p}
+		send "&8&m                                    " to {_p}
+		send "&f%{predb::id::%{_p}'s uuid%}% %{predb::foundpresents::%{_p}'s uuid%}% %{_location}%" to {_p}
+
+	else:
+		send action bar "&c%smallcaps("x")%&f%smallcaps("floral")%&f: &f%smallcaps("you already found this")% &6%smallcaps("present")%" to {_p}
